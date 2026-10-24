@@ -78,22 +78,49 @@
 
   /* --- ЗАГОЛОВОК --- */
   .page-title {
-    font-size: 32px;
+    font-size: 36px;
     font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 40px;
+    margin-bottom: 24px;
     background: linear-gradient(90deg, #fff, var(--accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 30px var(--accent-glow);
+    text-shadow: 0 0 40px var(--accent-glow);
   }
   .page-title span {
     -webkit-text-fill-color: initial;
-    font-size: 36px;
+    font-size: 40px;
+  }
+
+  /* --- ПОИСК --- */
+  .search-box {
+    margin-bottom: 40px;
+    position: relative;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 18px 24px;
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+  .search-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-glow), 0 4px 20px rgba(0,0,0,0.4);
+    background: var(--card-hover);
+  }
+  .search-box input::placeholder {
+    color: #64748b;
   }
 
   /* --- СЕТКА ПЛИТОК (ГЛАВНАЯ) --- */
@@ -161,31 +188,56 @@
     letter-spacing: 0.5px;
   }
 
-  /* --- ПОИСК --- */
-  .search-box {
+  /* --- РЕЗУЛЬТАТЫ ГЛОБАЛЬНОГО ПОИСКА --- */
+  .search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     margin-bottom: 40px;
-    position: relative;
   }
-  .search-box input {
-    width: 100%;
-    padding: 18px 24px;
+  .search-result-item {
     background: var(--card);
-    backdrop-filter: blur(10px);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    color: var(--text);
-    font-size: 16px;
-    outline: none;
-    transition: all 0.3s;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
   }
-  .search-box input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--accent-glow), 0 4px 20px rgba(0,0,0,0.4);
+  .search-result-item:hover {
     background: var(--card-hover);
+    border-color: var(--border-hover);
+    box-shadow: 0 0 15px var(--accent-glow);
   }
-  .search-box input::placeholder {
-    color: #64748b;
+  .search-result-category {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .search-result-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .search-result-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .no-results-msg {
+    color: var(--text-muted);
+    font-size: 16px;
+    text-align: center;
+    padding: 40px;
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px dashed var(--border);
   }
 
   /* --- ПРАВИЛА (СТРАНИЦА ГЛАВЫ) --- */
@@ -211,8 +263,13 @@
     border-radius: var(--radius);
     padding: 24px;
     margin-bottom: 16px;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     position: relative;
+  }
+  .rule-card.highlighted {
+    border-color: var(--accent);
+    box-shadow: 0 0 25px var(--accent-glow);
+    background: var(--card-hover);
   }
   .rule-card:hover {
     border-color: rgba(168, 85, 247, 0.4);
@@ -260,7 +317,7 @@
 
   /* --- УТИЛИТЫ --- */
   @media (max-width: 600px) {
-    .page-title { font-size: 24px; }
+    .page-title { font-size: 26px; }
     .tile { padding: 20px; }
     .container { padding: 30px 16px; }
   }
@@ -559,12 +616,12 @@ const DATABASE = [
 ];
 
 /* =========================================
-   ЛОГИКА И НАВИГАЦИЯ (С ПОДДЕРЖКОЙ КНОПОК МЫШИ)
+   ЛОГИКА И НАВИГАЦИЯ
    ========================================= */
 const app = document.getElementById('app');
 
-// Главная страница (Плитки)
-function renderHome(pushState = true) {
+// Главная страница (Плитки + Глобальный поиск)
+function renderHome(pushState = true, query = "") {
   if (pushState) {
     history.pushState({ view: 'home' }, '', window.location.pathname);
   }
@@ -573,23 +630,129 @@ function renderHome(pushState = true) {
     <div class="page-title">
       <span>📖</span> Правила сервера
     </div>
-    <div class="grid">
+    
+    <div class="search-box">
+      <input type="text" id="globalSearch" placeholder="Поиск по всем правилам (например: 1.20, PG, рейд)..." value="${query}" oninput="handleGlobalSearch(this.value)">
+    </div>
+    
+    <div id="homeContent">
   `;
 
-  DATABASE.forEach(category => {
-    html += `
-      <div class="tile" onclick="openCategory('${category.id}')">
-        <div class="tile-icon">${category.icon}</div>
-        <div class="tile-title">${category.title}</div>
-        <div class="tile-desc">${category.desc}</div>
-        <div class="tile-tag">${category.tag}</div>
-      </div>
-    `;
-  });
+  // Если есть поисковый запрос, рендерим результаты поиска
+  if (query.trim().length > 0) {
+    html += renderSearchResults(query);
+  } else {
+    // Иначе рендерим сетку с плитками
+    html += `<div class="grid">`;
+    DATABASE.forEach(category => {
+      html += `
+        <div class="tile" onclick="openCategory('${category.id}')">
+          <div class="tile-icon">${category.icon}</div>
+          <div class="tile-title">${category.title}</div>
+          <div class="tile-desc">${category.desc}</div>
+          <div class="tile-tag">${category.tag}</div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
 
   html += `</div>`;
   app.innerHTML = html;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  
+  // Возвращаем фокус в поле поиска, если была введена строка
+  if (query.length > 0) {
+    const input = document.getElementById('globalSearch');
+    input.focus();
+    input.setSelectionRange(query.length, query.length);
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+// Функция глобального поиска
+function renderSearchResults(query) {
+  const q = query.toLowerCase().trim();
+  if (!q) return "";
+
+  let results = [];
+
+  // Проходим по всей базе данных
+  DATABASE.forEach(category => {
+    category.chapters.forEach(chapter => {
+      chapter.rules.forEach(rule => {
+        const searchString = `${rule.num} ${rule.title} ${rule.text} ${chapter.title} ${category.title}`.toLowerCase();
+        if (searchString.includes(q)) {
+          results.push({ category, chapter, rule });
+        }
+      });
+    });
+  });
+
+  if (results.length === 0) {
+    return `<div class="no-results-msg">По запросу «${query}» ничего не найдено. Попробуйте изменить запрос.</div>`;
+  }
+
+  let html = `<div class="search-results">`;
+  results.forEach(item => {
+    html += `
+      <div class="search-result-item" onclick="jumpToRule('${item.category.id}', '${item.rule.num}')">
+        <div class="search-result-category">${item.category.title} • ${item.chapter.title}</div>
+        <div class="search-result-title">${item.rule.num}. ${item.rule.title}</div>
+        <div class="search-result-text">${item.rule.text}</div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  return html;
+}
+
+// Обработка ввода в глобальном поиске (с задержкой для оптимизации)
+let searchTimeout;
+function handleGlobalSearch(query) {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    const homeContent = document.getElementById('homeContent');
+    if (query.trim().length > 0) {
+      homeContent.innerHTML = renderSearchResults(query);
+    } else {
+      // Возвращаем плитки, если поиск очищен
+      let html = `<div class="grid">`;
+      DATABASE.forEach(category => {
+        html += `
+          <div class="tile" onclick="openCategory('${category.id}')">
+            <div class="tile-icon">${category.icon}</div>
+            <div class="tile-title">${category.title}</div>
+            <div class="tile-desc">${category.desc}</div>
+            <div class="tile-tag">${category.tag}</div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+      homeContent.innerHTML = html;
+    }
+  }, 200);
+}
+
+// Переход к конкретному правилу из поиска
+function jumpToRule(categoryId, ruleNum) {
+  openCategory(categoryId);
+  
+  // Ждем рендера и скроллим к нужному правилу
+  setTimeout(() => {
+    // Ищем карточку с нужным номером
+    const ruleCards = document.querySelectorAll('.rule-card');
+    for (let card of ruleCards) {
+      const title = card.querySelector('.rule-title').textContent;
+      if (title.startsWith(ruleNum + '.')) {
+        card.classList.add('highlighted');
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Убираем подсветку через 3 секунды
+        setTimeout(() => card.classList.remove('highlighted'), 3000);
+        break;
+      }
+    }
+  }, 100);
 }
 
 // Страница с правилами (Глава)
@@ -607,7 +770,7 @@ function openCategory(categoryId, pushState = true) {
       <span>${category.icon}</span> ${category.title}
     </div>
     <div class="search-box">
-      <input type="text" id="searchInput" placeholder="Поиск по правилам (например: 1.1, запрещено)..." oninput="filterRules()">
+      <input type="text" id="localSearch" placeholder="Поиск внутри раздела..." oninput="filterLocalRules()">
     </div>
     <div id="rulesContainer">
   `;
@@ -638,9 +801,9 @@ function openCategory(categoryId, pushState = true) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Поиск внутри категории
-function filterRules() {
-  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+// Поиск внутри категории (локальный)
+function filterLocalRules() {
+  const query = document.getElementById('localSearch').value.toLowerCase().trim();
   const chapters = document.querySelectorAll('.chapter-block');
   
   chapters.forEach(ch => {
@@ -670,15 +833,13 @@ window.addEventListener('popstate', (event) => {
   }
 });
 
-// Инициализация при загрузке (проверяем хеш в URL)
+// Инициализация при загрузке
 window.addEventListener('DOMContentLoaded', () => {
   const hash = window.location.hash.replace('#', '');
   if (hash && DATABASE.some(c => c.id === hash)) {
-    // Если в ссылке есть ID категории, открываем её
     history.replaceState({ view: 'category', id: hash }, '', `#${hash}`);
     openCategory(hash, false);
   } else {
-    // Иначе показываем главную
     history.replaceState({ view: 'home' }, '', window.location.pathname);
     renderHome(false);
   }
