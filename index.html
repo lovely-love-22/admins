@@ -5,104 +5,143 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Правила сервера — RMRP</title>
 <style>
+  /* --- ЦВЕТОВАЯ ПАЛИТРА И ПЕРЕМЕННЫЕ --- */
   :root {
-    --bg: #09090b;
-    --bg-card: #121215;
-    --bg-card-hover: #18181c;
-    --border: #27272a;
-    --text: #f4f4f5;
-    --text-muted: #a1a1aa;
-    --accent: #a855f7;
-    --accent-hover: #9333ea;
-    --danger: #ef4444;
-    --danger-bg: rgba(239, 68, 68, 0.1);
-    --danger-border: rgba(239, 68, 68, 0.2);
-    --radius: 12px;
+    --bg: #050508;
+    --bg-gradient: radial-gradient(circle at 50% 0%, #171124 0%, #050508 70%);
+    --card: rgba(24, 24, 27, 0.6);
+    --card-hover: rgba(39, 39, 42, 0.9);
+    --border: rgba(168, 85, 247, 0.15);
+    --border-hover: rgba(168, 85, 247, 0.6);
+    --text: #f8fafc;
+    --text-muted: #94a3b8;
+    --accent: #c084fc;
+    --accent-glow: rgba(192, 132, 252, 0.4);
+    --danger: #f87171;
+    --danger-bg: rgba(248, 113, 113, 0.1);
+    --danger-border: rgba(248, 113, 113, 0.3);
+    --radius: 16px;
   }
+
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  
   body {
     margin: 0; padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg);
+    background: var(--bg);
+    background-image: var(--bg-gradient);
+    background-attachment: fixed;
     color: var(--text);
-    line-height: 1.5;
+    line-height: 1.6;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
   }
   a { color: inherit; text-decoration: none; }
 
-  /* --- Контейнер --- */
+  /* --- КОНТЕЙНЕР --- */
   .container {
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 40px 20px;
+    padding: 50px 24px;
+    animation: fadeIn 0.4s ease-out forwards;
   }
 
-  /* --- Кнопка Назад --- */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* --- КНОПКА НАЗАД --- */
   .btn-back {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: #18181b;
+    background: var(--card);
+    backdrop-filter: blur(10px);
     border: 1px solid var(--border);
-    color: var(--text-muted);
-    padding: 8px 16px;
-    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 20px;
+    border-radius: 12px;
     font-size: 14px;
-    cursor: pointer;
-    transition: 0.2s;
-    margin-bottom: 30px;
-  }
-  .btn-back:hover {
-    background: #27272a;
-    color: var(--text);
-  }
-
-  /* --- Заголовок --- */
-  .page-title {
-    font-size: 28px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 30px;
-    color: var(--text);
-  }
-  .page-title span {
-    color: var(--accent);
-  }
-
-  /* --- Сетка плиток (Главная) --- */
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-  }
-  .tile {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+    margin-bottom: 40px;
+  }
+  .btn-back:hover {
+    background: var(--card-hover);
+    border-color: var(--border-hover);
+    box-shadow: 0 0 15px var(--accent-glow);
+    transform: translateX(-3px);
+  }
+
+  /* --- ЗАГОЛОВОК --- */
+  .page-title {
+    font-size: 32px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+    background: linear-gradient(90deg, #fff, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px var(--accent-glow);
+  }
+  .page-title span {
+    -webkit-text-fill-color: initial;
+    font-size: 36px;
+  }
+
+  /* --- СЕТКА ПЛИТОК (ГЛАВНАЯ) --- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+  .tile {
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tile::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: 0.3s;
   }
   .tile:hover {
-    background: var(--bg-card-hover);
-    border-color: var(--accent);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.15);
+    background: var(--card-hover);
+    border-color: var(--border-hover);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow);
   }
+  .tile:hover::before { opacity: 1; }
+  
   .tile-icon {
-    font-size: 32px;
-    margin-bottom: 8px;
+    font-size: 40px;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 0 10px var(--accent-glow));
   }
   .tile-title {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
   }
   .tile-desc {
     font-size: 14px;
@@ -111,108 +150,119 @@
   }
   .tile-tag {
     align-self: flex-start;
-    background: transparent;
+    background: rgba(168, 85, 247, 0.1);
     border: 1px solid var(--border);
-    color: var(--text-muted);
-    padding: 4px 10px;
-    border-radius: 6px;
+    color: var(--accent);
+    padding: 4px 12px;
+    border-radius: 8px;
     font-size: 12px;
-    font-weight: 600;
-    text-transform: lowercase;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
-  /* --- Поиск --- */
+  /* --- ПОИСК --- */
   .search-box {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     position: relative;
   }
   .search-box input {
     width: 100%;
-    padding: 16px 20px;
-    background: var(--bg-card);
+    padding: 18px 24px;
+    background: var(--card);
+    backdrop-filter: blur(10px);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     color: var(--text);
-    font-size: 15px;
+    font-size: 16px;
     outline: none;
-    transition: 0.2s;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
   }
   .search-box input:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+    box-shadow: 0 0 0 4px var(--accent-glow), 0 4px 20px rgba(0,0,0,0.4);
+    background: var(--card-hover);
   }
   .search-box input::placeholder {
-    color: var(--text-muted);
+    color: #64748b;
   }
 
-  /* --- Правила (Страница главы) --- */
+  /* --- ПРАВИЛА (СТРАНИЦА ГЛАВЫ) --- */
   .chapter-header {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 800;
     color: var(--accent);
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border);
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-top: 40px;
+    gap: 12px;
+    margin-top: 50px;
+    text-shadow: 0 0 15px var(--accent-glow);
   }
-  .chapter-header:first-child {
-    margin-top: 0;
-  }
+  .chapter-header:first-of-type { margin-top: 0; }
+  
   .rule-card {
-    background: var(--bg-card);
+    background: var(--card);
+    backdrop-filter: blur(10px);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px;
+    padding: 24px;
     margin-bottom: 16px;
-    transition: 0.2s;
+    transition: all 0.2s ease;
+    position: relative;
   }
   .rule-card:hover {
-    border-color: #3f3f46;
+    border-color: rgba(168, 85, 247, 0.4);
+    background: var(--card-hover);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
   }
   .rule-title {
     color: var(--accent);
-    font-weight: 700;
-    font-size: 16px;
+    font-weight: 800;
+    font-size: 18px;
     margin-bottom: 12px;
+    display: flex;
+    gap: 8px;
   }
   .rule-text {
-    font-size: 15px;
-    color: var(--text);
-    margin-bottom: 12px;
+    font-size: 16px;
+    color: #e2e8f0;
+    margin-bottom: 16px;
+    line-height: 1.6;
   }
   .rule-note {
-    font-size: 14px;
+    font-size: 15px;
     color: var(--text-muted);
-    border-left: 2px solid #3f3f46;
-    padding-left: 12px;
-    margin-top: 12px;
+    border-left: 3px solid var(--accent);
+    background: rgba(168, 85, 247, 0.05);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 16px;
     font-style: italic;
   }
   .rule-punish {
     display: inline-block;
-    margin-top: 16px;
     background: var(--danger-bg);
     color: #fca5a5;
     border: 1px solid var(--danger-border);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 0 10px rgba(248, 113, 113, 0.1);
   }
   .rule-punish span {
     color: var(--danger);
-    font-weight: 700;
   }
 
-  /* --- Утилиты --- */
-  .hidden { display: none !important; }
-  
+  /* --- УТИЛИТЫ --- */
   @media (max-width: 600px) {
-    .page-title { font-size: 22px; }
-    .tile { padding: 16px; }
+    .page-title { font-size: 24px; }
+    .tile { padding: 20px; }
+    .container { padding: 30px 16px; }
   }
 </style>
 </head>
@@ -509,12 +559,16 @@ const DATABASE = [
 ];
 
 /* =========================================
-   ЛОГИКА ПРИЛОЖЕНИЯ
+   ЛОГИКА И НАВИГАЦИЯ (С ПОДДЕРЖКОЙ КНОПОК МЫШИ)
    ========================================= */
 const app = document.getElementById('app');
 
 // Главная страница (Плитки)
-function renderHome() {
+function renderHome(pushState = true) {
+  if (pushState) {
+    history.pushState({ view: 'home' }, '', window.location.pathname);
+  }
+
   let html = `
     <div class="page-title">
       <span>📖</span> Правила сервера
@@ -535,16 +589,20 @@ function renderHome() {
 
   html += `</div>`;
   app.innerHTML = html;
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Страница с правилами (Глава)
-function openCategory(categoryId) {
+function openCategory(categoryId, pushState = true) {
   const category = DATABASE.find(c => c.id === categoryId);
   if (!category) return;
 
+  if (pushState) {
+    history.pushState({ view: 'category', id: categoryId }, '', `#${categoryId}`);
+  }
+
   let html = `
-    <button class="btn-back" onclick="renderHome()">← На главную</button>
+    <button class="btn-back" onclick="history.back()">← На главную</button>
     <div class="page-title">
       <span>${category.icon}</span> ${category.title}
     </div>
@@ -560,12 +618,7 @@ function openCategory(categoryId) {
         <div class="chapter-header">${chapter.title}</div>
     `;
     
-    // Сортируем правила по номерам для красоты
-    chapter.rules.sort((a, b) => {
-        const numA = parseFloat(a.num) || 0;
-        const numB = parseFloat(b.num) || 0;
-        return numA - numB;
-    });
+    chapter.rules.sort((a, b) => (parseFloat(a.num) || 0) - (parseFloat(b.num) || 0));
 
     chapter.rules.forEach(rule => {
       html += `
@@ -582,7 +635,7 @@ function openCategory(categoryId) {
 
   html += `</div>`;
   app.innerHTML = html;
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Поиск внутри категории
@@ -608,8 +661,28 @@ function filterRules() {
   });
 }
 
-// Инициализация при загрузке
-renderHome();
+// Обработка кнопок "Назад" / "Вперед" в браузере и на мышке
+window.addEventListener('popstate', (event) => {
+  if (event.state && event.state.view === 'category') {
+    openCategory(event.state.id, false);
+  } else {
+    renderHome(false);
+  }
+});
+
+// Инициализация при загрузке (проверяем хеш в URL)
+window.addEventListener('DOMContentLoaded', () => {
+  const hash = window.location.hash.replace('#', '');
+  if (hash && DATABASE.some(c => c.id === hash)) {
+    // Если в ссылке есть ID категории, открываем её
+    history.replaceState({ view: 'category', id: hash }, '', `#${hash}`);
+    openCategory(hash, false);
+  } else {
+    // Иначе показываем главную
+    history.replaceState({ view: 'home' }, '', window.location.pathname);
+    renderHome(false);
+  }
+});
 </script>
 </body>
 </html>
